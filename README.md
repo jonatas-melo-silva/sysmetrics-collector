@@ -22,6 +22,11 @@ system-monitor/
 ├── install.sh
 ├── system-monitor.sh
 └── src/
+    ├── install/
+    │   ├── root_checker.sh
+    │   ├── package_installer.sh
+    │   ├── sensors_config.sh
+    │   └── permissions_setup.sh
     ├── config/
     │   ├── colors.sh
     │   ├── dependencies.sh
