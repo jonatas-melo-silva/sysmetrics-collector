@@ -177,4 +177,4 @@ Siga as melhores práticas para garantir que suas alterações sejam revisadas e
 
 ## Licença
 
-Este projeto está licenciado sob a licença MIT. Consulte o arquivo LICENSE para mais detalhes.
+Este projeto está licenciado sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
