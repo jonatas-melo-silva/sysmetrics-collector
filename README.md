@@ -13,12 +13,20 @@ Um script Bash para monitoramento contínuo de métricas do sistema, incluindo:
 system-monitor/
 ├── README.md
 ├── LICENSE
-├── bin/
-│   └── system_monitor.sh
-├── logs/
-│   └── (diretório para logs gerados pelo script)
-├── config/
-│   └── config.sh (se necessário, para configurações específicas)
+├── install.sh
+├── system-monitor.sh
+└── src/
+    ├── config/
+    │   ├── colors.sh
+    │   ├── dependencies.sh
+    │   └── settings.sh
+    ├── utils/
+    │   ├── logger.sh
+    │   └── validators.sh
+    └── core/
+        ├── collector.sh
+        ├── initializer.sh
+        └── cleanup.sh
 ├── docs/
 │   └── documentation.md (opcional, para documentação detalhada)
 ├── tests/
