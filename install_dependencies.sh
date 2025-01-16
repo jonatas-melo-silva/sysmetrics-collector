@@ -25,7 +25,7 @@ main() {
     setup_permissions
 
     log_info "Instalação concluída com sucesso!"
-    log_info "Para iniciar o monitoramento, execute: ./system-monitor.sh"
+    log_info "Para iniciar o monitoramento, execute: ./sysmetrics-collector.sh"
 }
 
 # Inicia a instalação
