@@ -1,0 +1,20 @@
+#!/bin/bash
+#===================================================================================
+# Dependencies Configuration
+# Configuração de dependências do sistema
+#===================================================================================
+
+# Lista de dependências e seus pacotes
+declare -A DEPENDENCIES=(
+    ["sensors"]="lm-sensors"    # Para monitoramento de temperatura
+    ["free"]="procps"          # Para informações de memória
+    ["ps"]="procps"            # Para informações de processos
+    ["uptime"]="procps"        # Para tempo de atividade do sistema
+    ["df"]="coreutils"         # Para informações de disco
+    ["lscpu"]="util-linux"     # Para informações da CPU
+    ["grep"]="grep"            # Para filtrar saídas
+    ["head"]="coreutils"       # Para limitar saídas
+    ["find"]="findutils"       # Para limpeza de logs antigos
+)
+
+export DEPENDENCIES
