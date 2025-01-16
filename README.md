@@ -19,7 +19,7 @@ Um script Bash para monitoramento contínuo de recursos do sistema, coletando m�
 sysmetrics-collector/
 ├── README.md
 ├── LICENSE
-├── install.sh
+├── install_dependencies.sh
 ├── sysmetrics-collector.sh
 └── src/
     ├── install/
@@ -70,16 +70,16 @@ O script requer os seguintes pacotes:
     cd sysmetrics-collector
     ```
 
-3. Garanta que o script install.sh tenha permissão de execução:
+3. Garanta que o script install_dependencies.sh tenha permissão de execução:
 
     ```bash
-    chmod +x install.sh
+    chmod +x install_dependencies.sh
     ```
 
-4. Execute o script de instalação como root:
+4. Execute o script de instalação das dependências como root:
 
     ```bash
-    sudo ./install.sh
+    sudo ./install_dependencies.sh
     ```
 
 O script de instalação irá:
@@ -92,7 +92,7 @@ O script de instalação irá:
 
 Para iniciar o monitoramento:
 ```bash
-./system-monitor.sh
+./sysmetrics-collector.sh
 ```
 
 Por padrão, o sistema:
