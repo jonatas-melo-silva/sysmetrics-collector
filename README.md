@@ -1,6 +1,6 @@
-# System Monitor Script
+# SysMetrics Collector
 
-Um sistema completo de monitoramento de recursos do sistema, desenvolvido em Bash, que coleta e registra métricas importantes do sistema continuamente.
+Um script Bash para monitoramento contínuo de recursos do sistema, coletando métricas a cada 5 minutos e armazenando logs organizados por 7 dias em um diretório dedicado.
 
 ## Funcionalidades
 
@@ -16,11 +16,11 @@ Um sistema completo de monitoramento de recursos do sistema, desenvolvido em Bas
 ## Estrutura do Projeto
 
 ```plaintext
-system-monitor/
+sysmetrics-collector/
 ├── README.md
 ├── LICENSE
 ├── install.sh
-├── system-monitor.sh
+├── sysmetrics-collector.sh
 └── src/
     ├── install/
     │   ├── root_checker.sh
@@ -61,13 +61,13 @@ O script requer os seguintes pacotes:
 1. Clone o repositório:
 
     ```bash
-    git clone https://github.com/jonatas-melo-silva/system-monitor.git
+    git clone https://github.com/jonatas-melo-silva/sysmetrics-collector.git
     ```
 
 2. Navegue para o diretorio do projeto:
 
     ```bash
-    cd system-monitor
+    cd sysmetrics-collector
     ```
 
 3. Garanta que o script install.sh tenha permissão de execução:
