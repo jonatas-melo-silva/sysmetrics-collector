@@ -1,11 +1,17 @@
 # System Monitor Script
 
-Um script Bash para monitoramento contínuo de métricas do sistema, incluindo:
+Um sistema completo de monitoramento de recursos do sistema, desenvolvido em Bash, que coleta e registra métricas importantes do sistema continuamente.
 
-- Informações de CPU
-- Temperatura
-- Uso de memória e disco
-- Processos ativos
+## Funcionalidades
+
+- Monitoramento de CPU (modelo e frequência)
+- Monitoramento de temperatura
+- Uso de memória
+- Tempo de atividade e carga do sistema
+- Uso de disco
+- Processos mais ativos
+- Sistema de logs com rotação automática
+- Limpeza automática de logs antigos
 
 ## Estrutura do Projeto
 
@@ -34,9 +40,20 @@ system-monitor/
 ├── .gitignore
 ```
 
-## Como usar
+## Requisitos
 
-1. Clone o repositorio:
+O script requer os seguintes pacotes:
+
+- lm-sensors (monitoramento de temperatura)
+- procps (informações de memória, processos e uptime)
+- coreutils (informações de disco e utilitários básicos)
+- util-linux (informações da CPU)
+- grep (filtragem de saída)
+- findutils (gerenciamento de logs)
+
+## Instalação
+
+1. Clone o repositório:
 
     ```bash
     git clone https://github.com/jonatas-melo-silva/system-monitor.git
@@ -48,42 +65,71 @@ system-monitor/
     cd system-monitor
     ```
 
-3. de permissao de execucao ao script:
+3. Garanta que o script install.sh tenha permissão de execução:
 
     ```bash
-    chmod +x bin/system_monitor.sh
+    chmod +x install.sh
     ```
 
-4. execute o script:
+4. Execute o script de instalação como root:
 
     ```bash
-    ./bin/system_monitor.sh
+    sudo ./install.sh
     ```
 
-## Dependências
+O script de instalação irá:
 
-Certifique-se de que as seguintes ferramentas estão instaladas no sistema:
+- Verificar e instalar todas as dependências necessárias
+- Configurar os sensores do sistema
+- Configurar as permissões necessárias
 
-- sensors
-- free
-- df
-- uptime
+## Uso
 
-Para instalar essas ferramentas em sistemas baseados em Debian, use:
-
+Para iniciar o monitoramento:
 ```bash
-sudo apt update && sudo apt install lm-sensors procps
+./system-monitor.sh
 ```
 
-## Licença
+Por padrão, o sistema:
 
-Este projeto está licenciado sob a licença MIT. Consulte o arquivo LICENSE para mais detalhes.
+- Coleta métricas a cada 5 minutos
+- Armazena logs em `$HOME/system_logs/`
+- Mantém logs por 7 dias
 
-## Autor
+## Configuração
 
-- **Jonatas Melo Silva** - *Desenvolvedor principal*
+As principais configurações podem ser ajustadas em `src/config/settings.sh`:
 
-  Perfil no GitHub: jonatas-melo-silva
+- `LOG_DIR`: Diretório onde os logs serão armazenados
+- `MAX_DAYS`: Período de retenção dos logs
+- `INTERVAL`: Intervalo entre coletas (em segundos)
+
+## Carregamento de Configurações
+
+Os arquivos de configuração implementam um sistema de proteção contra importações múltiplas:
+
+- Cada arquivo de configuração pode ser importado várias vezes com segurança
+- As variáveis readonly são definidas apenas na primeira importação
+- O `PROJECT_ROOT` é preservado se já estiver definido
+- As configurações são carregadas automaticamente pelos módulos que as necessitam
+
+## Estrutura dos Módulos
+
+- **config/**: Configurações e dependências
+
+  - `settings.sh`: Configurações gerais do sistema
+  - `dependencies.sh`: Definição das dependências necessárias
+
+- **utils/**: Utilitários gerais
+
+  - `logger.sh`: Funções de logging
+  - `validators.sh`: Funções de validação
+
+- **core/**: Funcionalidades principais
+
+  - `collector.sh`: Coleta de métricas do sistema
+  - `initializer.sh`: Inicialização do sistema
+  - `cleanup.sh`: Limpeza e manutenção
 
 ## Como contribuir
 
@@ -112,3 +158,18 @@ Contribuições são sempre bem-vindas! Para contribuir:
 5. Abra um Pull Request no repositório original.
 
 Siga as melhores práticas para garantir que suas alterações sejam revisadas e aceitas rapidamente.
+
+- Cada módulo deve declarar suas próprias dependências
+- Use as funções de logging para mensagens
+- Exporte funções que serão usadas por outros módulos
+- Mantenha o padrão de documentação nos cabeçalhos
+
+## Autor
+
+- **Jonatas Melo Silva** - *Desenvolvedor principal*
+
+  Perfil no GitHub: [jonatas-melo-silva](https://github.com/jonatas-melo-silva)
+
+## Licença
+
+Este projeto está licenciado sob a licença MIT. Consulte o arquivo LICENSE para mais detalhes.
