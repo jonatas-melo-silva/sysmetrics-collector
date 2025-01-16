@@ -9,8 +9,8 @@ source "${PROJECT_ROOT}/src/utils/logger.sh"
 # Configura as permissões dos scripts
 setup_permissions() {
     log_info "Configurando permissões..."
-    chmod +x "${PROJECT_ROOT}/system-monitor.sh"
-    chmod +x "${PROJECT_ROOT}/install.sh"
+    chmod +x "${PROJECT_ROOT}/sysmetrics-collector.sh"
+    chmod +x "${PROJECT_ROOT}/install_dependencies.sh"
 }
 
 export -f setup_permissions
