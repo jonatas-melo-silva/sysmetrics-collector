@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+#
+# sysmetrics-collector: coleta métricas do sistema em intervalos regulares
+# e grava um relatório por dia em SYSMETRICS_LOG_DIR.
+
+set -euo pipefail
+
+SYSMETRICS_ROOT="${SYSMETRICS_ROOT:-$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)}"
+export SYSMETRICS_ROOT
+
+# shellcheck source=../src/config/settings.sh
+source "${SYSMETRICS_ROOT}/src/config/settings.sh"
+# shellcheck source=../src/utils/logger.sh
+source "${SYSMETRICS_ROOT}/src/utils/logger.sh"
+# shellcheck source=../src/utils/validators.sh
+source "${SYSMETRICS_ROOT}/src/utils/validators.sh"
+# shellcheck source=../src/core/retention.sh
+source "${SYSMETRICS_ROOT}/src/core/retention.sh"
+# shellcheck source=../src/core/collector.sh
+source "${SYSMETRICS_ROOT}/src/core/collector.sh"
+
+_SLEEPER_PID=""
+
+usage() {
+    cat <<USAGE
+Uso: sysmetrics-collector [opção]
+
+Opções:
+  --loop         coleta continuamente, a cada SYSMETRICS_INTERVAL segundos (padrão)
+  --once         faz uma única coleta e encerra
+  -V, --version  mostra a versão
+  -h, --help     mostra esta ajuda
+
+Variáveis de ambiente:
+  SYSMETRICS_LOG_DIR   diretório dos relatórios (padrão: \$HOME/system_logs)
+  SYSMETRICS_INTERVAL  segundos entre coletas (padrão: 300)
+  SYSMETRICS_MAX_DAYS  dias de retenção dos relatórios (padrão: 7)
+USAGE
+}
+
+run_cycle() {
+    cleanup_old_logs || log_warning "Falha ao limpar relatórios antigos"
+    collect_system_info || log_error "Erro ao coletar informações do sistema"
+}
+
+_stop() {
+    log_info "Sinal recebido, encerrando o monitoramento"
+    [[ -z "$_SLEEPER_PID" ]] || kill "$_SLEEPER_PID" 2>/dev/null || true
+    exit 0
+}
+
+run_loop() {
+    trap _stop INT TERM
+    while true; do
+        run_cycle
+        # sleep em segundo plano + wait deixa o trap rodar na hora,
+        # em vez de esperar o intervalo inteiro terminar.
+        sleep "$SYSMETRICS_INTERVAL" &
+        _SLEEPER_PID=$!
+        wait "$_SLEEPER_PID" || true
+    done
+}
+
+main() {
+    local mode="loop"
+    while (($# > 0)); do
+        case "$1" in
+        --once) mode="once" ;;
+        --loop) mode="loop" ;;
+        -V | --version)
+            echo "sysmetrics-collector ${SYSMETRICS_VERSION}"
+            return 0
+            ;;
+        -h | --help)
+            usage
+            return 0
+            ;;
+        *)
+            log_error "Opção desconhecida: $1"
+            usage >&2
+            return 2
+            ;;
+        esac
+        shift
+    done
+
+    validate_settings || return 2
+    check_dependencies || return 1
+
+    log_info "Iniciando (modo=${mode}, intervalo=${SYSMETRICS_INTERVAL}s, retenção=${SYSMETRICS_MAX_DAYS} dias, logs em ${SYSMETRICS_LOG_DIR})"
+    if [[ "$mode" == "once" ]]; then
+        run_cycle
+    else
+        run_loop
+    fi
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

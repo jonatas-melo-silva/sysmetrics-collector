@@ -1,2 +1,12 @@
+# relatórios gerados
 logs/
 *.log
+
+# artefatos de build
+dist/
+*.tar.gz
+
+# local
+.env
+.vscode/
+.idea/
