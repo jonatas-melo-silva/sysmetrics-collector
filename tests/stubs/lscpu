@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+printf 'Vendor ID:  StubVendor\nModel name: Stub CPU 3000\nCPU MHz:    3000.000\n'
