@@ -1,0 +1,16 @@
+name: Sugestão
+description: Uma melhoria ou métrica nova
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qual problema isso resolve
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Como você imagina que funcione
+    validations:
+      required: true

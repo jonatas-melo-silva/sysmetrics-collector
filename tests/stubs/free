@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+printf '               total        used\nMem:            16Gi         4Gi\n'

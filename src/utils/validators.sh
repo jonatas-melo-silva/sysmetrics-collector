@@ -1,43 +1,53 @@
-#!/bin/bash
-#===================================================================================
-# System Monitor Validators
-# Funções de validação de dependências
-#===================================================================================
+#!/usr/bin/env bash
+# Validação de configuração e de dependências.
 
-source "${PROJECT_ROOT}/src/config/dependencies.sh"
-source "${PROJECT_ROOT}/src/utils/logger.sh"
+# comando obrigatório -> pacote Debian/Ubuntu que o fornece
+declare -gA SYSMETRICS_REQUIRED=(
+    [lscpu]=util-linux
+    [free]=procps
+    [ps]=procps
+    [uptime]=procps
+    [df]=coreutils
+    [date]=coreutils
+    [sort]=coreutils
+    [find]=findutils
+    [sed]=sed
+    [grep]=grep
+)
 
-# Verifica dependências
-check_dependencies() {
-    local missing_deps=()
-    local missing_packages=()
-
-    log_info "Verificando dependências..."
-
-    for cmd in "${!DEPENDENCIES[@]}"; do
-        if ! command -v "$cmd" &> /dev/null; then
-            missing_deps+=("$cmd")
-            if [[ ! " ${missing_packages[@]} " =~ " ${DEPENDENCIES[$cmd]} " ]]; then
-                missing_packages+=("${DEPENDENCIES[$cmd]}")
-            fi
+validate_settings() {
+    local name value rc=0
+    for name in SYSMETRICS_INTERVAL SYSMETRICS_MAX_DAYS; do
+        value="${!name}"
+        if ! [[ "$value" =~ ^[1-9][0-9]*$ ]]; then
+            log_error "${name} deve ser um inteiro positivo (valor atual: '${value}')"
+            rc=1
         fi
     done
-
-    if [ ${#missing_deps[@]} -ne 0 ]; then
-        log_error "Dependências faltando: ${missing_deps[*]}"
-        echo -e "\nPara instalar todas as dependências necessárias, execute:"
-        echo -e "sudo apt update && sudo apt install -y ${missing_packages[*]}"
-
-        if [[ " ${missing_packages[@]} " =~ "lm-sensors" ]]; then
-            echo -e "\nApós instalar lm-sensors, execute:"
-            echo "sudo sensors-detect --auto"
-            echo "sudo systemctl restart kmod"
-        fi
-
-        exit 1
-    fi
-
-    log_info "Todas as dependências estão instaladas."
+    return "$rc"
 }
 
-export -f check_dependencies
+# Retorna 1 se faltar algum comando obrigatório. A ausência do sensors
+# (lm-sensors) só gera aviso: máquinas virtuais e containers não têm sensores.
+check_dependencies() {
+    local cmd pkg
+    local -a cmds=() missing_cmds=() missing_pkgs=()
+
+    mapfile -t cmds < <(printf '%s\n' "${!SYSMETRICS_REQUIRED[@]}" | sort)
+    for cmd in "${cmds[@]}"; do
+        command -v "$cmd" >/dev/null 2>&1 && continue
+        missing_cmds+=("$cmd")
+        pkg="${SYSMETRICS_REQUIRED[$cmd]}"
+        [[ " ${missing_pkgs[*]:-} " == *" ${pkg} "* ]] || missing_pkgs+=("$pkg")
+    done
+
+    if ((${#missing_cmds[@]} > 0)); then
+        log_error "Dependências ausentes: ${missing_cmds[*]}"
+        log_error "Instale com: sudo apt install -y ${missing_pkgs[*]}"
+        return 1
+    fi
+
+    if ! command -v sensors >/dev/null 2>&1; then
+        log_warning "sensors (pacote lm-sensors) não encontrado: a seção de temperatura ficará indisponível"
+    fi
+}

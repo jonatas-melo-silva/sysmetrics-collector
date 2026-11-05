@@ -1,0 +1,19 @@
+[Unit]
+Description=SysMetrics Collector
+Documentation=https://github.com/jonatas-melo-silva/sysmetrics-collector
+
+[Service]
+Type=simple
+ExecStart=@PREFIX@/bin/sysmetrics-collector --loop
+Environment=SYSMETRICS_LOG_DIR=/var/log/sysmetrics-collector
+LogsDirectory=sysmetrics-collector
+DynamicUser=yes
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

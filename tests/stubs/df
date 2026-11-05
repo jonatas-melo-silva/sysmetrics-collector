@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+printf 'Filesystem  Size  Used Avail Use%% Mounted on\n/dev/stub    100G   10G   90G  10%% /\n'
