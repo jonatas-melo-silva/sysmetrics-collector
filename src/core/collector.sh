@@ -39,6 +39,7 @@ _jq_or() {
 metrics_cpu() {
     local raw
     raw="$(lscpu -J 2>/dev/null || true)"
+    # shellcheck disable=SC2016  # os $ abaixo são variáveis do jq, não do shell
     _jq_or '{"mhz_max":null,"mhz_min":null}' -c '
         def campo($nome): [.lscpu[] | select(.field | startswith($nome)) | .data | tonumber?] | first;
         { mhz_max: campo("CPU max MHz"), mhz_min: campo("CPU min MHz") }' <<<"$raw"
@@ -75,6 +76,7 @@ metrics_temperatures() {
 metrics_memory() {
     local raw
     raw="$(free -b 2>/dev/null || true)"
+    # shellcheck disable=SC2016  # os $ abaixo são variáveis do jq, não do shell
     _jq_or '{"ram":{},"swap":{}}' -R -s -c '
         def linha($rotulo):
             split("\n")
@@ -135,6 +137,7 @@ metrics_processes() {
             it == 2 && /^ *PID/ { f = 1; next }
             it == 2 && f && NF { print $1, $9 }' || true)"
     ps_raw="$(ps -e -o pid,pmem,rss,cputimes,comm 2>/dev/null | tail -n +2 || true)"
+    # shellcheck disable=SC2016  # os $ abaixo são variáveis do jq, não do shell
     _jq_or '[]' -R -s -c --arg top "$top_raw" --argjson n "$SYSMETRICS_TOP_PROCS" '
         def r1: (. * 10 | round) / 10;
         ($top | split("\n") | map(select(length > 0) | split(" "))
