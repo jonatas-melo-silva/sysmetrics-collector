@@ -25,7 +25,8 @@ Instale `bats`, `shellcheck` e `shfmt` (em Debian/Ubuntu: `sudo apt install bats
 ```text
 bin/sysmetrics-collector     ponto de entrada (opções, loop, sinais)
 src/config/settings.sh       configuração e valores padrão
-src/core/collector.sh        coleta e escrita do relatório
+src/core/collector.sh        coleta das métricas e escrita do relatório (JSONL)
+src/core/schema.sh           nomes dos campos do registro, em inglês e em português
 src/core/retention.sh        remoção de relatórios antigos
 src/utils/logger.sh          mensagens do programa (stderr)
 src/utils/validators.sh      validação de configuração e dependências
@@ -33,7 +34,7 @@ scripts/install-deps.sh      instala dependências com apt
 scripts/dev.sh               ambiente de desenvolvimento em container
 packaging/systemd/           modelo da unit do systemd
 tests/unit, tests/integration  suítes bats
-tests/stubs                  comandos falsos (lscpu, sensors, free...) com saída fixa
+tests/stubs                  comandos falsos (lscpu, sensors, free, top...) com saída fixa
 containers/Containerfile     imagem de desenvolvimento
 ```
 

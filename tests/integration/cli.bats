@@ -15,6 +15,8 @@ teardown() { teardown_env; }
     run "$BIN" --help
     [ "$status" -eq 0 ]
     [[ "$output" == *"Uso: sysmetrics-collector"* ]]
+    [[ "$output" == *"--en"* ]]
+    [[ "$output" == *"--pt"* ]]
 }
 
 @test "opção desconhecida sai com 2" {
@@ -42,17 +44,75 @@ teardown() { teardown_env; }
     run "$BIN" --once
     [ "$status" -eq 0 ]
     local arquivo
-    arquivo="${SYSMETRICS_LOG_DIR}/system_$(date +%Y%m%d).log"
+    arquivo="${SYSMETRICS_LOG_DIR}/system_$(date +%Y%m%d).jsonl"
     [ -f "$arquivo" ]
-    grep -q "\[Uso de Disco\]" "$arquivo"
+    [ "$(wc -l <"$arquivo")" -eq 1 ]
+    jq -e '.disk[0].mount == "/"' "$arquivo" >/dev/null
+}
+
+@test "sem flag nem variável o relatório sai em inglês" {
+    use_stubs
+    run "$BIN" --once
+    [ "$status" -eq 0 ]
+    jq -e 'has("timestamp") and has("memory")' "${SYSMETRICS_LOG_DIR}/system_$(date +%Y%m%d).jsonl" >/dev/null
+    [ ! -e "${SYSMETRICS_LOG_DIR}/sistema_$(date +%Y%m%d).jsonl" ]
+}
+
+@test "--en escolhe o relatório em inglês" {
+    use_stubs
+    run "$BIN" --en --once
+    [ "$status" -eq 0 ]
+    jq -e 'has("timestamp") and has("memory")' "${SYSMETRICS_LOG_DIR}/system_$(date +%Y%m%d).jsonl" >/dev/null
+}
+
+@test "--pt escolhe o relatório em português" {
+    use_stubs
+    run "$BIN" --pt --once
+    [ "$status" -eq 0 ]
+    local arquivo
+    arquivo="${SYSMETRICS_LOG_DIR}/sistema_$(date +%Y%m%d).jsonl"
+    [ -f "$arquivo" ]
+    jq -e 'has("data_hora") and has("memoria") and .memoria.ram.usada_bytes == 4000000000' "$arquivo" >/dev/null
+    [ ! -e "${SYSMETRICS_LOG_DIR}/system_$(date +%Y%m%d).jsonl" ]
+}
+
+@test "a ordem das opções não importa" {
+    use_stubs
+    run "$BIN" --once --pt
+    [ "$status" -eq 0 ]
+    [ -f "${SYSMETRICS_LOG_DIR}/sistema_$(date +%Y%m%d).jsonl" ]
+}
+
+@test "SYSMETRICS_LANG=pt escolhe o português sem flag" {
+    use_stubs
+    SYSMETRICS_LANG=pt run "$BIN" --once
+    [ "$status" -eq 0 ]
+    [ -f "${SYSMETRICS_LOG_DIR}/sistema_$(date +%Y%m%d).jsonl" ]
+}
+
+@test "a flag tem prioridade sobre SYSMETRICS_LANG" {
+    use_stubs
+    SYSMETRICS_LANG=pt run "$BIN" --en --once
+    [ "$status" -eq 0 ]
+    [ -f "${SYSMETRICS_LOG_DIR}/system_$(date +%Y%m%d).jsonl" ]
+    [ ! -e "${SYSMETRICS_LOG_DIR}/sistema_$(date +%Y%m%d).jsonl" ]
+}
+
+@test "SYSMETRICS_LANG inválido sai com 2 sem coletar nada" {
+    use_stubs
+    SYSMETRICS_LANG=fr run "$BIN" --once
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"SYSMETRICS_LANG"* ]]
+    [ ! -d "$SYSMETRICS_LOG_DIR" ]
 }
 
 @test "--once apaga relatórios vencidos" {
     use_stubs
     mkdir -p "$SYSMETRICS_LOG_DIR"
-    touch -d "10 days ago" "${SYSMETRICS_LOG_DIR}/system_19990101.log"
+    touch -d "10 days ago" "${SYSMETRICS_LOG_DIR}/system_19990101.jsonl" "${SYSMETRICS_LOG_DIR}/sistema_19990101.jsonl"
     run "$BIN" --once
-    [ ! -e "${SYSMETRICS_LOG_DIR}/system_19990101.log" ]
+    [ ! -e "${SYSMETRICS_LOG_DIR}/system_19990101.jsonl" ]
+    [ ! -e "${SYSMETRICS_LOG_DIR}/sistema_19990101.jsonl" ]
 }
 
 @test "modo loop encerra logo ao receber SIGTERM, sem esperar o intervalo" {
@@ -60,7 +120,7 @@ teardown() { teardown_env; }
     SYSMETRICS_INTERVAL=300 "$BIN" 3>&- &
     local pid=$!
     for _ in $(seq 50); do
-        compgen -G "${SYSMETRICS_LOG_DIR}/system_*.log" >/dev/null && break
+        compgen -G "${SYSMETRICS_LOG_DIR}/system_*.jsonl" >/dev/null && break
         sleep 0.1
     done
     kill -TERM "$pid"

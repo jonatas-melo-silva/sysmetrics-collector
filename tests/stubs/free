@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-printf '               total        used\nMem:            16Gi         4Gi\n'
+printf '               total        used        free      shared  buff/cache   available\n'
+printf 'Mem:     16000000000  4000000000  8000000000   100000000  4000000000 11000000000\n'
+printf 'Swap:     2000000000   500000000  1500000000\n'

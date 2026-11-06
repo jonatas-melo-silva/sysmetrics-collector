@@ -12,7 +12,7 @@ if [[ "${EUID}" -ne 0 ]]; then
     exit 1
 fi
 
-packages=(lm-sensors procps coreutils util-linux findutils sed grep)
+packages=(lm-sensors procps coreutils util-linux findutils gawk jq)
 
 apt-get update
 apt-get install -y --no-install-recommends "${packages[@]}"

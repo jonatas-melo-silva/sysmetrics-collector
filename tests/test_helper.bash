@@ -13,7 +13,7 @@ setup_env() {
     export SYSMETRICS_LOG_DIR="${TEST_TMP}/logs"
     export HOME="${TEST_TMP}/home"
     export NO_COLOR=1
-    unset SYSMETRICS_INTERVAL SYSMETRICS_MAX_DAYS STUB_SENSORS_FAIL
+    unset SYSMETRICS_INTERVAL SYSMETRICS_MAX_DAYS SYSMETRICS_LANG SYSMETRICS_TOP_PROCS STUB_SENSORS_FAIL
     mkdir -p "$HOME"
 }
 
@@ -45,7 +45,7 @@ isolated_path() {
         cmd="$(basename "$file")"
         [[ "$skip" == *" ${cmd} "* ]] || ln -s "$file" "${dir}/${cmd}"
     done
-    for cmd in bash date mkdir sed grep find sort touch cat dirname readlink tr rm sleep kill; do
+    for cmd in bash date mkdir sed grep find sort touch cat dirname readlink tr rm sleep kill awk jq nproc who tail; do
         [[ "$skip" == *" ${cmd} "* ]] || ln -s "$(command -v "$cmd")" "${dir}/${cmd}"
     done
     export PATH="$dir"

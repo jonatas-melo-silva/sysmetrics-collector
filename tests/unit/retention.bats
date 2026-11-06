@@ -18,6 +18,16 @@ teardown() { teardown_env; }
     [ -e "${SYSMETRICS_LOG_DIR}/system_recente.log" ]
 }
 
+@test "apaga relatórios .jsonl nos dois idiomas" {
+    touch -d "8 days ago" "${SYSMETRICS_LOG_DIR}/system_20260101.jsonl" "${SYSMETRICS_LOG_DIR}/sistema_20260101.jsonl"
+    touch -d "1 day ago" "${SYSMETRICS_LOG_DIR}/system_20260102.jsonl" "${SYSMETRICS_LOG_DIR}/sistema_20260102.jsonl"
+    cleanup_old_logs
+    [ ! -e "${SYSMETRICS_LOG_DIR}/system_20260101.jsonl" ]
+    [ ! -e "${SYSMETRICS_LOG_DIR}/sistema_20260101.jsonl" ]
+    [ -e "${SYSMETRICS_LOG_DIR}/system_20260102.jsonl" ]
+    [ -e "${SYSMETRICS_LOG_DIR}/sistema_20260102.jsonl" ]
+}
+
 @test "respeita SYSMETRICS_MAX_DAYS" {
     SYSMETRICS_MAX_DAYS=2
     touch -d "3 days ago" "${SYSMETRICS_LOG_DIR}/system_a.log"
@@ -28,10 +38,12 @@ teardown() { teardown_env; }
 }
 
 @test "não toca em arquivos que não são relatórios" {
-    touch -d "30 days ago" "${SYSMETRICS_LOG_DIR}/notas.txt" "${SYSMETRICS_LOG_DIR}/outro.log"
+    touch -d "30 days ago" "${SYSMETRICS_LOG_DIR}/notas.txt" "${SYSMETRICS_LOG_DIR}/outro.log" \
+        "${SYSMETRICS_LOG_DIR}/outro.jsonl"
     cleanup_old_logs
     [ -e "${SYSMETRICS_LOG_DIR}/notas.txt" ]
     [ -e "${SYSMETRICS_LOG_DIR}/outro.log" ]
+    [ -e "${SYSMETRICS_LOG_DIR}/outro.jsonl" ]
 }
 
 @test "não falha quando o diretório ainda não existe" {

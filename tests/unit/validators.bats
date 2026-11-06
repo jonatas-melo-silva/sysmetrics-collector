@@ -29,6 +29,30 @@ teardown() { teardown_env; }
     [[ "$output" == *"SYSMETRICS_MAX_DAYS"* ]]
 }
 
+@test "validate_settings rejeita número de processos inválido" {
+    SYSMETRICS_TOP_PROCS=0
+    run validate_settings
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"SYSMETRICS_TOP_PROCS"* ]]
+}
+
+@test "validate_settings aceita os idiomas en e pt" {
+    for valor in en pt; do
+        SYSMETRICS_LANG="$valor"
+        run validate_settings
+        [ "$status" -eq 0 ]
+    done
+}
+
+@test "validate_settings rejeita idioma desconhecido" {
+    for valor in fr EN pt-BR ""; do
+        SYSMETRICS_LANG="$valor"
+        run validate_settings
+        [ "$status" -eq 1 ]
+        [[ "$output" == *"SYSMETRICS_LANG"* ]]
+    done
+}
+
 @test "check_dependencies passa quando tudo existe" {
     use_stubs
     run check_dependencies
@@ -44,7 +68,7 @@ teardown() { teardown_env; }
 }
 
 @test "check_dependencies não repete pacote quando faltam vários comandos dele" {
-    isolated_path free uptime ps
+    isolated_path free ps top
     run check_dependencies
     [ "$status" -eq 1 ]
     [[ "$output" == *"apt install -y procps"* ]]

@@ -6,24 +6,32 @@ declare -gA SYSMETRICS_REQUIRED=(
     [lscpu]=util-linux
     [free]=procps
     [ps]=procps
-    [uptime]=procps
+    [top]=procps
     [df]=coreutils
     [date]=coreutils
     [sort]=coreutils
+    [tail]=coreutils
+    [cat]=coreutils
+    [nproc]=coreutils
+    [who]=coreutils
     [find]=findutils
-    [sed]=sed
-    [grep]=grep
+    [awk]=gawk
+    [jq]=jq
 )
 
 validate_settings() {
     local name value rc=0
-    for name in SYSMETRICS_INTERVAL SYSMETRICS_MAX_DAYS; do
+    for name in SYSMETRICS_INTERVAL SYSMETRICS_MAX_DAYS SYSMETRICS_TOP_PROCS; do
         value="${!name}"
         if ! [[ "$value" =~ ^[1-9][0-9]*$ ]]; then
             log_error "${name} deve ser um inteiro positivo (valor atual: '${value}')"
             rc=1
         fi
     done
+    if [[ "$SYSMETRICS_LANG" != "en" && "$SYSMETRICS_LANG" != "pt" ]]; then
+        log_error "SYSMETRICS_LANG deve ser 'en' ou 'pt' (valor atual: '${SYSMETRICS_LANG}')"
+        rc=1
+    fi
     return "$rc"
 }
 
