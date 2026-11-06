@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-printf 'Vendor ID:  StubVendor\nModel name: Stub CPU 3000\nCPU MHz:    3000.000\n'
+printf '{"lscpu":[{"field":"Model name:","data":"Stub CPU"},{"field":"CPU max MHz:","data":"3000.0000"},{"field":"CPU min MHz:","data":"800.0000"}]}\n'

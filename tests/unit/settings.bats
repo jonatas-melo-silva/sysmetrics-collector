@@ -10,7 +10,19 @@ teardown() { teardown_env; }
     load_modules config/settings
     [ "$SYSMETRICS_INTERVAL" = "300" ]
     [ "$SYSMETRICS_MAX_DAYS" = "7" ]
+    [ "$SYSMETRICS_TOP_PROCS" = "5" ]
     [ "$SYSMETRICS_LOG_DIR" = "${HOME}/system_logs" ]
+}
+
+@test "o idioma padrão é en" {
+    load_modules config/settings
+    [ "$SYSMETRICS_LANG" = "en" ]
+}
+
+@test "SYSMETRICS_LANG sobrescreve o idioma padrão" {
+    export SYSMETRICS_LANG=pt
+    load_modules config/settings
+    [ "$SYSMETRICS_LANG" = "pt" ]
 }
 
 @test "variáveis de ambiente sobrescrevem os padrões" {

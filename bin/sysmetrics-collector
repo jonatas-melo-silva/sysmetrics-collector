@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # sysmetrics-collector: coleta métricas do sistema em intervalos regulares
-# e grava um relatório por dia em SYSMETRICS_LOG_DIR.
+# e grava um relatório por dia em SYSMETRICS_LOG_DIR, com uma linha JSON (JSONL)
+# por coleta e nomes de campo em inglês (--en, padrão) ou português (--pt).
 
 set -euo pipefail
 
@@ -14,6 +15,8 @@ source "${SYSMETRICS_ROOT}/src/config/settings.sh"
 source "${SYSMETRICS_ROOT}/src/utils/logger.sh"
 # shellcheck source=../src/utils/validators.sh
 source "${SYSMETRICS_ROOT}/src/utils/validators.sh"
+# shellcheck source=../src/core/schema.sh
+source "${SYSMETRICS_ROOT}/src/core/schema.sh"
 # shellcheck source=../src/core/retention.sh
 source "${SYSMETRICS_ROOT}/src/core/retention.sh"
 # shellcheck source=../src/core/collector.sh
@@ -28,6 +31,8 @@ Uso: sysmetrics-collector [opção]
 Opções:
   --loop         coleta continuamente, a cada SYSMETRICS_INTERVAL segundos (padrão)
   --once         faz uma única coleta e encerra
+  --en           campos do relatório em inglês (padrão)
+  --pt           campos do relatório em português
   -V, --version  mostra a versão
   -h, --help     mostra esta ajuda
 
@@ -35,6 +40,8 @@ Variáveis de ambiente:
   SYSMETRICS_LOG_DIR   diretório dos relatórios (padrão: \$HOME/system_logs)
   SYSMETRICS_INTERVAL  segundos entre coletas (padrão: 300)
   SYSMETRICS_MAX_DAYS  dias de retenção dos relatórios (padrão: 7)
+  SYSMETRICS_LANG      idioma dos campos, en ou pt (padrão: en); --en e --pt têm prioridade
+  SYSMETRICS_TOP_PROCS quantos grupos de processos entram no relatório (padrão: 5)
 USAGE
 }
 
@@ -67,6 +74,8 @@ main() {
         case "$1" in
         --once) mode="once" ;;
         --loop) mode="loop" ;;
+        --en) SYSMETRICS_LANG="en" ;;
+        --pt) SYSMETRICS_LANG="pt" ;;
         -V | --version)
             echo "sysmetrics-collector ${SYSMETRICS_VERSION}"
             return 0
@@ -87,7 +96,7 @@ main() {
     validate_settings || return 2
     check_dependencies || return 1
 
-    log_info "Iniciando (modo=${mode}, intervalo=${SYSMETRICS_INTERVAL}s, retenção=${SYSMETRICS_MAX_DAYS} dias, logs em ${SYSMETRICS_LOG_DIR})"
+    log_info "Iniciando (modo=${mode}, intervalo=${SYSMETRICS_INTERVAL}s, retenção=${SYSMETRICS_MAX_DAYS} dias, idioma=${SYSMETRICS_LANG}, logs em ${SYSMETRICS_LOG_DIR})"
     if [[ "$mode" == "once" ]]; then
         run_cycle
     else

@@ -35,19 +35,33 @@ Coletar continuamente (Ctrl+C encerra na hora):
 bin/sysmetrics-collector
 ```
 
-Os relatórios ficam em `~/system_logs/system_AAAAMMDD.log`, um arquivo por dia. Cada coleta acrescenta um bloco com estas seções:
+### Idioma do relatório
 
-```text
-$ grep '^\[' ~/system_logs/system_$(date +%Y%m%d).log
-[Informações de CPU]
-[Temperaturas]
-[Uso de Memória]
-[Uptime e Carga do Sistema]
-[Uso de Disco]
-[Processos Mais Ativos]
+Por padrão os campos saem em inglês. Para português, use `--pt`; `--en` volta ao padrão:
+
+```bash
+bin/sysmetrics-collector --pt --once
 ```
 
-Se o `sensors` não estiver instalado ou falhar (comum em máquina virtual), a seção de temperatura registra "indisponível" e o resto do relatório sai normal.
+Também dá para fixar o idioma com a variável `SYSMETRICS_LANG` (`en` ou `pt`). Quando as duas coisas aparecem, a opção da linha de comando vale.
+
+### Formato dos relatórios
+
+Os relatórios ficam em `~/system_logs/`, um arquivo por dia, com uma linha JSON (JSONL) por coleta. O idioma muda o nome do arquivo e o nome dos campos:
+
+| Opção | Arquivo | Campos de primeiro nível |
+| --- | --- | --- |
+| `--en` (padrão) | `system_AAAAMMDD.jsonl` | `timestamp`, `cpu`, `temperatures_c`, `memory`, `system`, `disk`, `processes` |
+| `--pt` | `sistema_AAAAMMDD.jsonl` | `data_hora`, `cpu`, `temperaturas_c`, `memoria`, `sistema`, `disco`, `processos` |
+
+Os valores são os mesmos nos dois idiomas. Memória e disco vêm em bytes, a temperatura em °C e a frequência em MHz. Em `processes` (ou `processos`) entram os `SYSMETRICS_TOP_PROCS` comandos com mais uso de CPU, somando os processos de mesmo nome. Cada linha é um JSON completo, então o `jq` lê direto:
+
+```bash
+jq '{hora: .timestamp, ram_usada: .memory.ram.used_bytes}' ~/system_logs/system_$(date +%Y%m%d).jsonl
+jq '.processes[0]' ~/system_logs/system_$(date +%Y%m%d).jsonl
+```
+
+Se o `sensors` não estiver instalado ou falhar (comum em máquina virtual), `temperatures_c` fica `{}` e o resto do registro sai normal. O mesmo vale para qualquer outro comando que falhe: só o campo dele fica vazio. Trocar de idioma no meio do dia grava num segundo arquivo (`system_` e `sistema_` convivem), e a limpeza de relatórios antigos cuida dos dois.
 
 ### Como serviço do systemd
 
@@ -57,7 +71,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now sysmetrics-collector
 ```
 
-Nesse modo os relatórios vão para `/var/log/sysmetrics-collector/` e as mensagens do programa para o `journalctl -u sysmetrics-collector`. Para remover: `sudo make uninstall`.
+Nesse modo os relatórios vão para `/var/log/sysmetrics-collector/` e as mensagens do programa para o `journalctl -u sysmetrics-collector`. Para usar o relatório em português, rode `sudo systemctl edit sysmetrics-collector` e acrescente `[Service]` com `Environment=SYSMETRICS_LANG=pt`. Para remover: `sudo make uninstall`.
 
 ## Configuração
 
@@ -68,12 +82,14 @@ Tudo se ajusta por variável de ambiente:
 | `SYSMETRICS_LOG_DIR` | `$HOME/system_logs` | Diretório dos relatórios |
 | `SYSMETRICS_INTERVAL` | `300` | Segundos entre coletas |
 | `SYSMETRICS_MAX_DAYS` | `7` | Dias que cada relatório é mantido |
+| `SYSMETRICS_TOP_PROCS` | `5` | Quantos grupos de processos entram em cada coleta |
+| `SYSMETRICS_LANG` | `en` | Idioma dos campos, `en` ou `pt`. `--en` e `--pt` têm prioridade |
 
 ```bash
 SYSMETRICS_INTERVAL=60 SYSMETRICS_MAX_DAYS=14 bin/sysmetrics-collector
 ```
 
-Valores que não sejam inteiros positivos fazem o programa sair com código 2 antes de coletar qualquer coisa.
+Valores inválidos (inteiros que não sejam positivos, ou idioma diferente de `en` e `pt`) fazem o programa sair com código 2 antes de coletar qualquer coisa.
 
 ## Vindo da versão 1.x
 

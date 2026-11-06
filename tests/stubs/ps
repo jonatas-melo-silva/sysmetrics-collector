@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
-echo 'USER PID %CPU COMMAND'
-for i in 1 2 3 4 5 6 7 8; do echo "root ${i} 1.0 stubproc${i}"; done
+# Saída de: ps -e -o pid,pmem,rss,cputimes,comm. O pid 9 também é "stubproc7",
+# para exercitar o agrupamento por comando.
+echo '  PID %MEM   RSS CPUTIMES COMMAND'
+for i in 1 2 3 4 5 6 7; do echo "${i} 1.0 100 10 stubproc${i}"; done
+echo "9 1.0 100 10 stubproc7"
